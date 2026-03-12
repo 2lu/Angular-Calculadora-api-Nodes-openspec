@@ -1,0 +1,290 @@
+openapi: 3.0.0
+info:
+  title: Calculadora API
+  description: |
+    API RESTful uma calculadora web interativa construída com Node.js e Angular.
+    Todos os endpoints retornam JSON e suportam CORS.
+    
+    **Base URL**: http://localhost:3000/api
+    **Documentação Interativa**: http://localhost:3000/api-docs
+  version: 1.0.0
+  contact:
+    name: Time de Desenvolvimento
+    description: Projeto Full-Stack com Angular + Node.js
+  license:
+    name: ISC
+    url: https://opensource.org/licenses/ISC
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor de Desenvolvimento
+    variables:
+      port:
+        default: '3000'
+
+tags:
+  - name: Health Check
+    description: Status do servidor
+  - name: Calculadora
+    description: Operações de cálculo e informações
+
+paths:
+  /api/health:
+    get:
+      tags:
+        - Health Check
+      summary: Verificar status do servidor
+      operationId: getHealth
+      description: |
+        Verifica se o servidor está ativo e retorna informações
+        de status e timestamp.
+      responses:
+        '200':
+          description: Servidor está operacional
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                success:
+                  value:
+                    status: OK
+                    timestamp: "2024-03-12T10:30:00.000Z"
+                    port: 3000
+                    service: Calculator API
+
+  /api/calculate:
+    post:
+      tags:
+        - Calculadora
+      summary: Calcular uma expressão matemática
+      operationId: calculateExpression
+      description: |
+        Avalia uma expressão matemática de forma segura e retorna o resultado.
+        
+        **Operadores Suportados**:
+        - Básicos: `+`, `-`, `*`, `/`
+        - Funções: `sqrt()`, `pow()`, `sin()`, `cos()`, `tan()`, `log()`, `abs()`
+        
+        **Exemplos Válidos**:
+        - `"2+2"` → 4
+        - `"10*5"` → 50
+        - `"sqrt(16)"` → 4
+        - `"pow(2,8)"` → 256
+        - `"(10+5)*2"` → 30
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculateRequest'
+            examples:
+              addition:
+                summary: Adição simples
+                value:
+                  expression: "10+5"
+              complex:
+                summary: Expressão complexa
+                value:
+                  expression: "(10+5)*2-3"
+              function:
+                summary: Função matemática
+                value:
+                  expression: "sqrt(16)+pow(2,3)"
+      responses:
+        '200':
+          description: Cálculo realizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculateResponse'
+              examples:
+                success:
+                  value:
+                    result: 15
+        '400':
+          description: |
+            Requisição inválida. Verifique:
+            - Se expression é uma string
+            - Se expression não está vazia
+            - Se usa apenas caracteres permitidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                noExpression:
+                  value:
+                    error: "Expressão não fornecida."
+                invalidType:
+                  value:
+                    error: "Expressão deve ser uma string."
+                invalidMath:
+                  value:
+                    error: "Expressão matemática inválida."
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Erro interno do servidor"
+
+  /api/operations:
+    get:
+      tags:
+        - Calculadora
+      summary: Listar operações suportadas
+      operationId: getOperations
+      description: |
+        Retorna a lista completa de operações matemáticas
+        que podem ser usadas na calculadora.
+      responses:
+        '200':
+          description: Lista de operações disponíveis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationsResponse'
+              example:
+                operations:
+                  - symbol: "+"
+                    name: "Adição"
+                    example: "10+5"
+                  - symbol: "-"
+                    name: "Subtração"
+                    example: "10-5"
+                  - symbol: "*"
+                    name: "Multiplicação"
+                    example: "10*5"
+                  - symbol: "/"
+                    name: "Divisão"
+                    example: "10/5"
+                description: Operações matemáticas suportadas pela calculadora
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - port
+        - service
+      properties:
+        status:
+          type: string
+          enum: [OK, ERROR]
+          description: Status de saúde do servidor
+          example: "OK"
+        timestamp:
+          type: string
+          format: date-time
+          description: Data e hora do verificação em ISO 8601
+          example: "2024-03-12T10:30:00.000Z"
+        port:
+          type: integer
+          minimum: 1024
+          maximum: 65535
+          description: Porta em que o servidor está rodando
+          example: 3000
+        service:
+          type: string
+          description: Nome do serviço
+          example: "Calculator API"
+
+    CalculateRequest:
+      type: object
+      required:
+        - expression
+      properties:
+        expression:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: |
+            A expressão matemática a ser calculada.
+            Deve conter apenas números e operadores válidos.
+          example: "2*5+10"
+
+    CalculateResponse:
+      type: object
+      required:
+        - result
+      properties:
+        result:
+          type: number
+          description: O resultado do cálculo da expressão
+          example: 20
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Mensagem de erro descritiva
+          example: "Expressão matemática inválida."
+
+    Operation:
+      type: object
+      required:
+        - symbol
+        - name
+        - example
+      properties:
+        symbol:
+          type: string
+          description: Símbolo ou nome da operação
+          example: "+"
+        name:
+          type: string
+          description: Nome legível da operação
+          example: "Adição"
+        example:
+          type: string
+          description: Exemplo de uso da operação
+          example: "10+5"
+
+    OperationsResponse:
+      type: object
+      required:
+        - operations
+        - description
+      properties:
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Operation'
+          description: Lista de operações disponíveis
+        description:
+          type: string
+          description: Descrição geral das operações
+          example: "Operações matemáticas suportadas pela calculadora"
+
+  responses:
+    BadRequest:
+      description: Requisição inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    InternalServerError:
+      description: Erro interno do servidor
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  securitySchemes:
+    # Para versão futura com autenticação
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+externalDocs:
+  description: Documentação Interativa Swagger
+  url: http://localhost:3000/api-docs

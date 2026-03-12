@@ -1,0 +1,50 @@
+<div class="calculator-container">
+  <div class="calculator">
+    <!-- Display -->
+    <div class="display-section">
+      <input 
+        type="text" 
+        class="display" 
+        [value]="display" 
+        readonly>
+      <div *ngIf="error" class="error-message">{{ error }}</div>
+    </div>
+
+    <!-- Linhas de Botões -->
+    <div class="buttons-grid">
+      <!-- Linha 1: C, <-, ÷ -->
+      <button class="btn-control" (click)="clear()">C</button>
+      <button class="btn-control" (click)="backspace()">←</button>
+      <button class="btn-operator" (click)="setOperator('/')">÷</button>
+      <button class="btn-operator" (click)="setOperator('*')">×</button>
+
+      <!-- Linha 2: 7, 8, 9, - -->
+      <button class="btn-number" (click)="addNumber('7')">7</button>
+      <button class="btn-number" (click)="addNumber('8')">8</button>
+      <button class="btn-number" (click)="addNumber('9')">9</button>
+      <button class="btn-operator" (click)="setOperator('-')">-</button>
+
+      <!-- Linha 3: 4, 5, 6, + -->
+      <button class="btn-number" (click)="addNumber('4')">4</button>
+      <button class="btn-number" (click)="addNumber('5')">5</button>
+      <button class="btn-number" (click)="addNumber('6')">6</button>
+      <button class="btn-operator" (click)="setOperator('+')">+</button>
+
+      <!-- Linha 4: 1, 2, 3, = (estendido) -->
+      <button class="btn-number" (click)="addNumber('1')">1</button>
+      <button class="btn-number" (click)="addNumber('2')">2</button>
+      <button class="btn-number" (click)="addNumber('3')">3</button>
+      <button 
+        class="btn-equals" 
+        (click)="calculate()"
+        [disabled]="isLoading">
+        = 
+        <span *ngIf="isLoading" class="loading">...</span>
+      </button>
+
+      <!-- Linha 5: 0 (estendido), . -->
+      <button class="btn-number btn-zero" (click)="addNumber('0')">0</button>
+      <button class="btn-number" (click)="addNumber(',')">,</button>
+    </div>
+  </div>
+</div>
